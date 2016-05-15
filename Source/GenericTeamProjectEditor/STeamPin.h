@@ -1,7 +1,6 @@
 #pragma once
 #include "SlateBasics.h"
-#include "SGraphPin.h" 
-#include "Runtime/Engine/Public/GraphEditAction.h"
+#include "SGraphPin.h"
  
 class STeamPin : public SGraphPin
 {
@@ -21,8 +20,4 @@ public:
 	virtual TSharedRef<SWidget>	GetDefaultValueWidget() override;
 
 	void OnTeamSelected(TSharedPtr<FString> InSelectedString, ESelectInfo::Type InSelectionType);
-
-protected:
-
-	void OnGraphChanged(const FEdGraphEditAction& InAction);
 };
