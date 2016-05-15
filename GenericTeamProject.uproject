@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.10",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "GenericTeamProject",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"AIModule",
+				"Engine",
+				"BlueprintGraph"
+			]
+		},
+		{
+			"Name": "GenericTeamProjectEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
