@@ -3,6 +3,7 @@
 /Intermediate
 /Build
 /Saved
+/.vs
 *.pdb
 *.sdf
 Config/DefaultEditorUserSettings.ini
