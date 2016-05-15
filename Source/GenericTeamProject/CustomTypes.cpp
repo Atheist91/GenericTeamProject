@@ -2,18 +2,12 @@
 
 #include "GenericTeamProject.h"
 #include "CustomTypes.h"
-#include "CustomPawn.h"
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
+#include "AIController.h"
 
 FTeam::FTeam()
 {
-	Name = FName("");
-	RowHandler.DataTable = UCustomTypes::GetTeamsDataTable();
-}
-
-FTeamConfig* FTeam::GetTeamConfig() const
-{
-	return RowHandler.GetRow<FTeamConfig>();
+	Name = FName("None");
 }
 
 FTeamAttitudeConfig::FTeamAttitudeConfig()
@@ -50,7 +44,29 @@ UCustomTypes::UCustomTypes()
 	TeamsDataTable = DataTableAsset.Object;
 }
 
-bool UCustomTypes::GetTeamByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName)
+FTeamConfig* UCustomTypes::GetTeamConfig(FTeam InTeam)
+{
+	FTeamConfig* Result = nullptr;
+
+	if (TeamsDataTable)
+	{
+		FString Context;
+
+		Result = TeamsDataTable->FindRow<FTeamConfig>(InTeam.Name, Context);
+		if (!Result)
+		{
+			// error, couldn't find team
+		}
+	}
+	else
+	{
+		// error wrong ref to data table
+	}
+
+	return Result;
+}
+
+bool UCustomTypes::GetTeamConfigByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName)
 {
 	if (TeamsDataTable)
 	{
@@ -80,29 +96,31 @@ bool UCustomTypes::GetTeamByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTea
 	return false;
 }
 
-bool UCustomTypes::GetTeamOfPawn(APawn* InPawn, FTeamConfig*& OutTeamConfig)
+bool UCustomTypes::GetTeamOfPawn(APawn* InPawn, FTeamConfig*& OutTeamConfig, FName& OutTeamName)
 {
-	ACustomPawn* CustomPawn = Cast<ACustomPawn>(InPawn);
-	FTeamConfig* Result = CustomPawn ? CustomPawn->GetTeamConfig() : nullptr;
-	if (Result)
+	AAIController* Controller = InPawn ? Cast<AAIController>(InPawn->GetController()) : nullptr;
+	FTeamConfig* Result = nullptr;
+	FName TeamName;
+	if (Controller && UCustomTypes::GetTeamConfigByTeamID(Controller->GetGenericTeamId(), Result, TeamName))
 	{
 		OutTeamConfig = Result;
+		OutTeamName = TeamName;
 		return true;
 	}
 	else
 	{
-		if (!InPawn) UE_LOG(Code, Warning, TEXT("Can't get TeamConfig of because given Pawn is null."));
-		if (!CustomPawn && InPawn) UE_LOG(Code, Warning, TEXT("Can't get TeamConfig of given Pawn [%s] because the Pawn doesn't derive from CustomPawn class."), *InPawn->GetName());
-		if (CustomPawn && !Result) UE_LOG(Code, Warning, TEXT("Can't get TeamConfig of given Pawn [%s]. Probably the team of that Pawn isn't configured properly."), *CustomPawn->GetName());
+		if (!InPawn) UE_LOG(Code, Warning, TEXT("Couldn't get TeamConfig because given Pawn is null."));
+		if (!Controller && InPawn) UE_LOG(Code, Warning, TEXT("Couldn't get TeamConfig of given Pawn [%s] because the Pawn isn't controlled by AIController."), *InPawn->GetName());
+		if (Controller && !Result) UE_LOG(Code, Warning, TEXT("Couldn't get TeamConfig of given Pawn [%s]. See errors/warnings above."), *InPawn->GetName());
 	}
-	
+
 	return false;
 }
 
-void UCustomTypes::GetTeamName(FTeam InTeam, FName& OutTeamName, FName& OutTeamName2)
+bool UCustomTypes::GetTeamName(APawn* InPawn, FName& OutName)
 {
-	OutTeamName = InTeam.Name;
-	OutTeamName2 = InTeam.RowHandler.RowName;
+	FTeamConfig* TeamConfig = nullptr;
+	return GetTeamOfPawn(InPawn, TeamConfig, OutName);
 }
 
 UDataTable* UCustomTypes::GetTeamsDataTable()

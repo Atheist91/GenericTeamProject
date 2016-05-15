@@ -5,9 +5,9 @@
 #include "CustomTypes.h"
 #include "CustomPawn.h"
 
-void ACustomAIController::BeginPlay()
+void ACustomAIController::Tick(float DeltaTime)
 {
-	Super::BeginPlay();
+	Super::Tick(DeltaTime);
 
 	// Showing attitude of each pawn towards each other.
 	// Just for testing purposes.
@@ -21,18 +21,6 @@ void ACustomAIController::BeginPlay()
 	}
 }
 
-void ACustomAIController::Possess(APawn* InPawn)
-{
-	Super::Possess(InPawn);
-
-	// Getting TeamID of controlled pawn.
-	FTeamConfig* MyTeamConfig;
-	if (UCustomTypes::GetTeamOfPawn(InPawn, MyTeamConfig))
-	{
-		SetGenericTeamId(MyTeamConfig->TeamID);
-	}
-}
-
 ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Other) const
 {
 	const IGenericTeamAgentInterface* OtherTeamAgent = Cast<const IGenericTeamAgentInterface>(&Other);
@@ -41,12 +29,12 @@ ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Ot
 		// Finding 'My' TeamConfig.
 		FTeamConfig* MyTeamConfig;
 		FName MyTeamName;
-		const bool bFoundMyTeam = UCustomTypes::GetTeamByTeamID(GetGenericTeamId(), MyTeamConfig, MyTeamName);
+		const bool bFoundMyTeam = UCustomTypes::GetTeamConfigByTeamID(GetGenericTeamId(), MyTeamConfig, MyTeamName);
 
 		// Finding TeamConfig of OtherTeamAgent.
 		FTeamConfig* OtherTeamConfig;
 		FName OtherTeamName;
-		const bool bFoundOtherTeam = UCustomTypes::GetTeamByTeamID(OtherTeamAgent->GetGenericTeamId(), OtherTeamConfig, OtherTeamName);
+		const bool bFoundOtherTeam = UCustomTypes::GetTeamConfigByTeamID(OtherTeamAgent->GetGenericTeamId(), OtherTeamConfig, OtherTeamName);
 
 		// If we managed to find both TeamConfigs.
 		if (bFoundMyTeam && bFoundOtherTeam)
@@ -70,4 +58,20 @@ ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Ot
 	}
 
 	return ETeamAttitude::Neutral;
+}
+
+bool ACustomAIController::SetTeam(FTeam InTeam)
+{
+	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamConfig(InTeam);
+	if (NewTeamConfig)
+	{
+		SetGenericTeamId(NewTeamConfig->TeamID);
+		return true;
+	}
+	else
+	{		
+		UE_LOG(Code, Error, TEXT("Can't assign AIController [%s] to team [%s] because the config for desired Team couldn't be found. See errors/warnings above."), *GetName(), *InTeam.Name.ToString());
+	}
+
+	return false;
 }

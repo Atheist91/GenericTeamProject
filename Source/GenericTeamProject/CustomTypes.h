@@ -16,12 +16,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	FName Name;
 
-	UPROPERTY(EditAnywhere, Meta = (ShowOnlyInnerProperties))
-	FDataTableRowHandle RowHandler;
-
 	FTeam();
-
-	struct FTeamConfig* GetTeamConfig() const;
 };
 
 USTRUCT(BlueprintType)
@@ -79,21 +74,24 @@ public:
 
 	UCustomTypes();
 
+	static FTeamConfig* GetTeamConfig(FTeam InTeam);
+
 	// Gets info about a Team basing on TeamID.
 	// @param InTeamID - ID of a Team of which we want to get info.
 	// @param OutTeamConfig - Config of desired Team.
 	// @param OutTeamName - Name of desired Team.
 	// @returns - Whether we were able to find the Team using given InTeamID or not.
-	static bool GetTeamByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName);
+	static bool GetTeamConfigByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName);
 
 	// Gets info about a Team to which given Pawn belongs.
 	// @param InPawn - Pawn whos Team we want to find.
 	// @param OutTeamConfig - Config of a team to which given InPawn belongs.
+	// @param OutTeamName - Name of desired Team.
 	// @returns - Whether we were able to get TeamConfig from InPawn or not.
-	static bool GetTeamOfPawn(APawn* InPawn, FTeamConfig*& OutTeamConfig);
+	static bool GetTeamOfPawn(APawn* InPawn, FTeamConfig*& OutTeamConfig, FName& OutTeamName);	
 
 	UFUNCTION(BlueprintPure, Category = "AI Team")
-	static void GetTeamName(FTeam InTeam, FName& OutTeamName, FName& OutTeamName2);
+	static bool GetTeamName(APawn* InPawn, FName& OutName);
 
 	// Gets DataTable containing info about Teams and their relations between each other.
 	static UDataTable* GetTeamsDataTable();

@@ -15,23 +15,15 @@ public:
 
 protected:
 
-	// A team to which this Pawn will belong.
-	// Team.DataTable has to contain a reference to DataTable asset containing teams and their relations.  Then, the dropdown of available teams will show up.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Configuration")
-	FTeam Team;
-
 private:
 
 public:
 
-	ACustomPawn();
-
-	// Moves this pawn to new team.	
+	// Assigns this pawn to new Team.
+	// @param InTeam - The Team to which this Pawn will be assigned.
+	// @returns - Whether Pawn was successfully assigned to a Team or not.
 	UFUNCTION(BlueprintCallable, Category = "AI Team")
-	virtual void SetTeam(FTeam InTeam);
-
-	// Returns config of a Team to which this Pawn belongs.
-	FTeamConfig* GetTeamConfig() const;
+	virtual bool SetTeam(FTeam InTeam);	
 
 protected:
 

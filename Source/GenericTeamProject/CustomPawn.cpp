@@ -4,31 +4,21 @@
 #include "CustomPawn.h"
 #include "AIController.h"
 
-ACustomPawn::ACustomPawn()
-{
-	Team = FTeam();
-}
-
-void ACustomPawn::SetTeam(FTeam InTeam)
+bool ACustomPawn::SetTeam(FTeam InTeam)
 {
 	AAIController* MyController = Cast<AAIController>(GetController());
-	FTeamConfig* NewTeamConfig = InTeam.GetTeamConfig();
+	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamConfig(InTeam);
 	if (NewTeamConfig && MyController)
 	{
-		Team = InTeam;
-
 		// Setting new TeamID on controlling controller.
 		MyController->SetGenericTeamId(NewTeamConfig->TeamID);
+		return true;
 	}
 	else
 	{
-		if (!MyController) UE_LOG(Code, Error, TEXT("Can't assign pawn %s to team [%s|%s] because the pawn isn't controlled by AIController."), *GetName(), *InTeam.Name.ToString(), *InTeam.RowHandler.RowName.ToString());
-		if (!NewTeamConfig && InTeam.RowHandler.DataTable) UE_LOG(Code, Error, TEXT("Can't assign pawn %s to team [%s|%s] because selected DataTable doesn't such Team."), *GetName(), *InTeam.Name.ToString(), *InTeam.RowHandler.RowName.ToString());
-		if (!NewTeamConfig && !InTeam.RowHandler.DataTable) UE_LOG(Code, Error, TEXT("Can't assign pawn %s to team [%s|%s] because DataTable of given Team is null."), *GetName(), *InTeam.Name.ToString(), *InTeam.RowHandler.RowName.ToString());
+		if (!MyController) UE_LOG(Code, Error, TEXT("Can't assign pawn [%s] to team [%s] because the pawn isn't controlled by AIController."), *GetName(), *InTeam.Name.ToString());
+		if (!NewTeamConfig) UE_LOG(Code, Error, TEXT("Can't assign pawn [%s] to team [%s] because the config for desired team couldn't be found. It probably means that the Team doesn't exist in DataTable containing Teams."), *GetName(), *InTeam.Name.ToString());		
 	}
-}
 
-FTeamConfig* ACustomPawn::GetTeamConfig() const
-{
-	return Team.RowHandler.GetRow<FTeamConfig>();
+	return false;
 }
