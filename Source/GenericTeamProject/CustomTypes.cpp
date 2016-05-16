@@ -7,12 +7,12 @@
 
 FTeam::FTeam()
 {
-	Name = FName("None");
+	Name = FName("");
 }
 
 FTeamAttitudeConfig::FTeamAttitudeConfig()
 {
-	OtherTeam = FName("");
+	OtherTeam = FName("None");
 	Attitude = ETeamAttitude::Neutral;
 }
 
@@ -44,37 +44,38 @@ UCustomTypes::UCustomTypes()
 	TeamsDataTable = DataTableAsset.Object;
 }
 
-FTeamConfig* UCustomTypes::GetTeamConfig(FTeam InTeam)
+FTeamConfig* UCustomTypes::GetTeamByName(FName InTeamName)
 {
-	FTeamConfig* Result = nullptr;
-
 	if (TeamsDataTable)
 	{
 		FString Context;
-
-		Result = TeamsDataTable->FindRow<FTeamConfig>(InTeam.Name, Context);
-		if (!Result)
+		FTeamConfig* Result = TeamsDataTable->FindRow<FTeamConfig>(InTeamName, Context);
+		if (Result)
 		{
-			// error, couldn't find team
+			return Result;
+		}
+		else
+		{
+			UE_LOG(Code, Error, TEXT("There is no such [%s] Team in TeamsDataTable [%s]. Context: [%s]"), *InTeamName.ToString(), *TeamsDataTable->GetName(), *Context);
 		}
 	}
 	else
 	{
-		// error wrong ref to data table
+		UE_LOG(Code, Error, TEXT("Couldn't get TeamConfig for Team [%s] because TeamsDataTable is null. See Constructor of UCustomTypes and see if the path matches to actuall asset."), *InTeamName.ToString());
 	}
 
-	return Result;
+	return nullptr;
 }
 
-bool UCustomTypes::GetTeamConfigByTeamID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName)
+bool UCustomTypes::GetTeamByID(FGenericTeamId InTeamID, FTeamConfig*& OutTeamConfig, FName& OutTeamName)
 {
 	if (TeamsDataTable)
 	{
+		// Going through every row in DataTable
 		for (auto It = TeamsDataTable->RowMap.CreateConstIterator(); It; ++It)
 		{
 			const FName TeamName = It.Key();
-			const FString UselessVar = FString("");
-			FTeamConfig* TeamConfig = TeamsDataTable->FindRow<FTeamConfig>(TeamName, UselessVar);
+			FTeamConfig* TeamConfig = GetTeamByName(TeamName);
 			if (TeamConfig && TeamConfig->TeamID == InTeamID)
 			{
 				UE_LOG(Code, Log, TEXT("Found Team [%s] in TeamsDataTable [%s] which uses given TeamID [%d]."), *TeamName.ToString(), *TeamsDataTable->GetName(), InTeamID.GetId());
@@ -90,7 +91,7 @@ bool UCustomTypes::GetTeamConfigByTeamID(FGenericTeamId InTeamID, FTeamConfig*& 
 	}
 	else
 	{
-		UE_LOG(Code, Error, TEXT("Can't get TeamConfig because UCustomTypes class wasn't able to get reference to DataTable containing Teams. Make sure that the path in constructor matches to the path of the actual asset."));
+		UE_LOG(Code, Error, TEXT("Couldn't get TeamConfig for TeamID [%d] because TeamsDataTable is null. See Constructor of UCustomTypes and see if the path matches to actuall asset."), InTeamID.GetId());
 	}
 
 	return false;
@@ -101,7 +102,7 @@ bool UCustomTypes::GetTeamOfPawn(APawn* InPawn, FTeamConfig*& OutTeamConfig, FNa
 	AAIController* Controller = InPawn ? Cast<AAIController>(InPawn->GetController()) : nullptr;
 	FTeamConfig* Result = nullptr;
 	FName TeamName;
-	if (Controller && UCustomTypes::GetTeamConfigByTeamID(Controller->GetGenericTeamId(), Result, TeamName))
+	if (Controller && UCustomTypes::GetTeamByID(Controller->GetGenericTeamId(), Result, TeamName))
 	{
 		OutTeamConfig = Result;
 		OutTeamName = TeamName;

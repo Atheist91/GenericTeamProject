@@ -26,15 +26,16 @@ public:
 
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
 
-	// Assigns this pawn to new Team.
-	// @param InTeam - The Team to which this Pawn will be assigned.
-	// @returns - Whether Pawn was successfully assigned to a Team or not.
+	// Assigns this AIController to Team.
+	// @param InTeam - The Team to which this COntroller will be assigned.
+	// @returns - Whether Controller was successfully assigned to a Team or not.
 	UFUNCTION(BlueprintCallable, Category = "AI Team")
 	virtual bool SetTeam(FTeam InTeam);
 
 protected:
 
-	//
+	// Shows attitude of this Controller towards given Pawn.
+	// It's just for testing purposes.
 	UFUNCTION(BlueprintImplementableEvent, Category = "AI Team Preview")
 	void ShowAttitude(ETeamAttitude::Type InAttitude, ACustomPawn* InPawn);
 

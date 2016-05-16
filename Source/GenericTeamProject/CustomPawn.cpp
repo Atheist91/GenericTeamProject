@@ -7,10 +7,9 @@
 bool ACustomPawn::SetTeam(FTeam InTeam)
 {
 	AAIController* MyController = Cast<AAIController>(GetController());
-	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamConfig(InTeam);
+	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamByName(InTeam.Name);
 	if (NewTeamConfig && MyController)
 	{
-		// Setting new TeamID on controlling controller.
 		MyController->SetGenericTeamId(NewTeamConfig->TeamID);
 		return true;
 	}

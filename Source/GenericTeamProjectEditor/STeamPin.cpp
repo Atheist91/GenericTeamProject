@@ -3,7 +3,6 @@
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "SGraphPin.h"
-#include "SNameComboBox.h"
 #include "STextComboBox.h"
 
 #include "STeamPin.h"

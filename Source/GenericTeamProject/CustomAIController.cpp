@@ -29,12 +29,12 @@ ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Ot
 		// Finding 'My' TeamConfig.
 		FTeamConfig* MyTeamConfig;
 		FName MyTeamName;
-		const bool bFoundMyTeam = UCustomTypes::GetTeamConfigByTeamID(GetGenericTeamId(), MyTeamConfig, MyTeamName);
+		const bool bFoundMyTeam = UCustomTypes::GetTeamByID(GetGenericTeamId(), MyTeamConfig, MyTeamName);
 
 		// Finding TeamConfig of OtherTeamAgent.
 		FTeamConfig* OtherTeamConfig;
 		FName OtherTeamName;
-		const bool bFoundOtherTeam = UCustomTypes::GetTeamConfigByTeamID(OtherTeamAgent->GetGenericTeamId(), OtherTeamConfig, OtherTeamName);
+		const bool bFoundOtherTeam = UCustomTypes::GetTeamByID(OtherTeamAgent->GetGenericTeamId(), OtherTeamConfig, OtherTeamName);
 
 		// If we managed to find both TeamConfigs.
 		if (bFoundMyTeam && bFoundOtherTeam)
@@ -48,13 +48,18 @@ ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Ot
 			else
 			{
 				// If we reached this place, it means the 'My' Team has no specified relations towards the OtherTeamAgent's Team.
-				UE_LOG(Code, Warning, TEXT("Couldn't find what's the attitude %s (Team: %s) towards [%s] (Team: %s). It means that the desired relation wasn't defined in DataTable with Teams."), *GetName(), *MyTeamName.ToString(), *Other.GetName(), *OtherTeamName.ToString());
+				UE_LOG(Code, Warning, TEXT("Couldn't find what's the attitude %s (Team: %s) towards [%s] (Team: %s). It means that the desired relation wasn't defined in DataTable with Teams. Returning Neutral attitude."), *GetName(), *MyTeamName.ToString(), *Other.GetName(), *OtherTeamName.ToString());
 			}
 		}
 		else
 		{
-			// error
+			if (!bFoundMyTeam) UE_LOG(Code, Error, TEXT("Couldn't find mine [%s] TeamConfig. See the error above. Returning Neutral attitude."), *GetName());
+			if (!bFoundOtherTeam) UE_LOG(Code, Error, TEXT("Couldn't find TeamConfig of given Actor [%s]. See the error above. Returning Neutral attitude."), *Other.GetName());
 		}
+	}
+	else
+	{
+		UE_LOG(Code, Warning, TEXT("Given Actor [%s] doesn't implement IGenericTeamAgentInterface interface. Returning Neutral attitude."), *Other.GetName());
 	}
 
 	return ETeamAttitude::Neutral;
@@ -62,7 +67,7 @@ ETeamAttitude::Type ACustomAIController::GetTeamAttitudeTowards(const AActor& Ot
 
 bool ACustomAIController::SetTeam(FTeam InTeam)
 {
-	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamConfig(InTeam);
+	FTeamConfig* NewTeamConfig = UCustomTypes::GetTeamByName(InTeam.Name);
 	if (NewTeamConfig)
 	{
 		SetGenericTeamId(NewTeamConfig->TeamID);

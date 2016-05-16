@@ -23,7 +23,7 @@ public:
 	// @param InTeam - The Team to which this Pawn will be assigned.
 	// @returns - Whether Pawn was successfully assigned to a Team or not.
 	UFUNCTION(BlueprintCallable, Category = "AI Team")
-	virtual bool SetTeam(FTeam InTeam);	
+	virtual bool SetTeam(FTeam InTeam);
 
 protected:
 
